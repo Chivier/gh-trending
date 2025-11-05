@@ -14,7 +14,7 @@ services:
 
   scheduler:
     build: .
-    command: python scheduler.py
+    command: npm run scheduler
     volumes:
       - ./reports:/app/reports
       - ./gh_trending.db:/app/gh_trending.db

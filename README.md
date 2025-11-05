@@ -16,13 +16,14 @@ A lightweight GitHub Trending scraper and analysis tool that requires no GitHub 
 ```
 gh-trending/
 ├── src/
-│   ├── fetch_data/        # Web scraping (BeautifulSoup)
+│   ├── fetch/             # Web scraping (Cheerio)
 │   ├── summarize/         # AI summaries (optional)
 │   ├── generate/          # Report generation
-│   ├── database/          # Database models
-│   └── api.py             # FastAPI server
+│   ├── database/          # Database models & TypeORM
+│   ├── api.ts             # Express API server
+│   └── scheduler.ts       # Daily scheduled tasks
 ├── frontend/              # Web Dashboard
-├── scheduler.py           # Daily scheduled tasks
+├── dist/                  # Compiled JavaScript
 └── reports/               # Generated reports
 ```
 
@@ -30,7 +31,7 @@ gh-trending/
 
 ### Prerequisites
 
-- Python 3.8+
+- Node.js 18+ and npm
 - (Optional) OpenAI API Key - Only required for project summaries
 
 ### Quick Start
@@ -43,9 +44,7 @@ cd gh-trending
 
 2. **Install dependencies**
 ```bash
-python3 -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-pip install -r requirements.txt
+npm install
 ```
 
 3. **Configure environment variables** (optional)
@@ -55,18 +54,21 @@ cp .env.example .env
 # Otherwise you can skip this step
 ```
 
-4. **Initialize the database**
+4. **Build TypeScript**
 ```bash
-alembic upgrade head
+npm run build
 ```
 
 5. **Run the application**
 ```bash
 # Start the Web API
-python src/api.py
+npm start
 
-# Start the scheduler (auto-updates daily at 10:00 AM)
-python scheduler.py
+# Or use the startup script
+./start.sh
+
+# Start the scheduler (auto-updates daily at 9:00 AM UTC)
+npm run scheduler
 ```
 
 ## 🚀 Usage
@@ -91,12 +93,12 @@ curl -X POST http://localhost:8000/api/fetch
 curl http://localhost:8000/api/trending
 
 # Filter by language
-curl http://localhost:8000/api/trending?language=Python
+curl http://localhost:8000/api/trending?language=TypeScript
 ```
 
 ## ⏰ Automation
 
-The scheduler automatically executes daily at 10:00 AM:
+The scheduler automatically executes daily at 9:00 AM UTC:
 1. Fetch the latest trending projects
 2. (Optional) Generate AI summaries for new projects (up to 5)
 3. Generate daily reports
@@ -153,12 +155,13 @@ The frontend automatically detects the API endpoint:
 
 ## 📝 Tech Stack
 
-- **Web Scraping**: BeautifulSoup4 + Requests
-- **Web Framework**: FastAPI
-- **Database**: SQLite + SQLAlchemy
+- **Language**: TypeScript/Node.js
+- **Web Scraping**: Cheerio + Axios
+- **Web Framework**: Express.js
+- **Database**: SQLite + TypeORM
 - **Frontend**: HTML/CSS/JavaScript
 - **AI**: OpenAI (optional)
-- **Scheduling**: Schedule
+- **Scheduling**: node-cron
 
 ## 🔧 Configuration
 
@@ -178,9 +181,13 @@ LOG_LEVEL=INFO
 
 ### Schedule Time
 
-Modify the time in `scheduler.py`:
-```python
-schedule.every().day.at("10:00").do(daily_job)  # Daily at 10:00 AM
+Modify the time in `src/scheduler.ts`:
+```typescript
+// Daily at 9:00 AM UTC
+cron.schedule('0 9 * * *', fetchTrendingData, {
+  scheduled: true,
+  timezone: 'UTC',
+});
 ```
 
 ## 📂 Database Structure
