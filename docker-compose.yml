@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./reports:/app/reports
+      - ./gh_trending.db:/app/gh_trending.db
+    env_file:
+      - .env
+    restart: unless-stopped
+
+  scheduler:
+    build: .
+    command: python scheduler.py
+    volumes:
+      - ./reports:/app/reports
+      - ./gh_trending.db:/app/gh_trending.db
+    env_file:
+      - .env
+    restart: unless-stopped
+    depends_on:
+      - app
