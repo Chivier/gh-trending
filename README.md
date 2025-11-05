@@ -1,186 +1,216 @@
-# GitHub Trending 分析工具
+# GitHub Trending Analysis Tool
 
-一个轻量级的 GitHub Trending 抓取和分析工具，无需 GitHub Token，每天自动更新。
+A lightweight GitHub Trending scraper and analysis tool that requires no GitHub Token and updates automatically every day.
 
-## ✨ 特性
+## ✨ Features
 
-- **🚫 无需 Token**: 直接爬取 GitHub Trending 页面，无需 API Token
-- **⏰ 自动更新**: 每天自动抓取最新的 trending 项目
-- **💾 数据存储**: 使用 SQLite 存储历史数据
-- **📊 数据可视化**: 美观的 Web Dashboard
-- **🤖 AI 摘要** (可选): 使用 OpenAI 生成项目摘要
-- **📈 趋势分析**: 分析编程语言趋势
+- **🚫 No Token Required**: Directly scrapes GitHub Trending pages without needing an API Token
+- **⏰ Auto Updates**: Automatically fetches the latest trending projects daily
+- **💾 Data Storage**: Stores historical data using SQLite
+- **📊 Data Visualization**: Beautiful Web Dashboard
+- **🤖 AI Summaries** (optional): Uses OpenAI to generate project summaries
+- **📈 Trend Analysis**: Analyzes programming language trends
 
-## 🏗️ 架构
+## 🏗️ Architecture
 
 ```
 gh-trending/
 ├── src/
-│   ├── fetch_data/        # 网页爬取 (BeautifulSoup)
-│   ├── summarize/         # AI 摘要 (可选)
-│   ├── generate/          # 报告生成
-│   ├── database/          # 数据库模型
-│   └── api.py             # FastAPI 服务器
+│   ├── fetch_data/        # Web scraping (BeautifulSoup)
+│   ├── summarize/         # AI summaries (optional)
+│   ├── generate/          # Report generation
+│   ├── database/          # Database models
+│   └── api.py             # FastAPI server
 ├── frontend/              # Web Dashboard
-├── scheduler.py           # 每日定时任务
-└── reports/               # 生成的报告
+├── scheduler.py           # Daily scheduled tasks
+└── reports/               # Generated reports
 ```
 
-## 📦 安装
+## 📦 Installation
 
-### 前置要求
+### Prerequisites
 
 - Python 3.8+
-- (可选) OpenAI API Key - 仅用于生成项目摘要
+- (Optional) OpenAI API Key - Only required for project summaries
 
-### 快速开始
+### Quick Start
 
-1. **克隆项目**
+1. **Clone the repository**
 ```bash
 git clone https://github.com/yourusername/gh-trending.git
 cd gh-trending
 ```
 
-2. **安装依赖**
+2. **Install dependencies**
 ```bash
 python3 -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-3. **配置环境变量** (可选)
+3. **Configure environment variables** (optional)
 ```bash
 cp .env.example .env
-# 如果需要 AI 摘要功能，编辑 .env 添加 OPENAI_API_KEY
-# 否则可以跳过此步骤
+# If you need AI summary functionality, edit .env and add OPENAI_API_KEY
+# Otherwise you can skip this step
 ```
 
-4. **初始化数据库**
+4. **Initialize the database**
 ```bash
 alembic upgrade head
 ```
 
-5. **运行**
+5. **Run the application**
 ```bash
-# 启动 Web API
+# Start the Web API
 python src/api.py
 
-# 启动定时任务 (每天 10:00 AM 自动更新)
+# Start the scheduler (auto-updates daily at 10:00 AM)
 python scheduler.py
 ```
 
-## 🚀 使用
+## 🚀 Usage
 
-### Web 界面
+### Web Interface
 
-启动 API 后，访问：
-- Dashboard: 打开 `frontend/index.html`
-- HTML 报告: http://localhost:8000/api/report/html
+After starting the API, visit:
+- Dashboard: Open `frontend/index.html`
+- HTML Report: http://localhost:8000/api/report/html
 
-### 手动抓取
+### Manual Fetch
 
-通过 API 手动触发数据抓取：
+Manually trigger data fetching via the API:
 ```bash
 curl -X POST http://localhost:8000/api/fetch
 ```
 
-### 查看数据
+### View Data
 
 ```bash
-# 获取 trending 列表
+# Get trending list
 curl http://localhost:8000/api/trending
 
-# 按语言过滤
+# Filter by language
 curl http://localhost:8000/api/trending?language=Python
 ```
 
-## ⏰ 自动化
+## ⏰ Automation
 
-调度器每天 10:00 AM 自动执行：
-1. 抓取最新的 trending 项目
-2. (可选) 为新项目生成 AI 摘要 (最多 5 个)
-3. 生成每日报告
+The scheduler automatically executes daily at 10:00 AM:
+1. Fetch the latest trending projects
+2. (Optional) Generate AI summaries for new projects (up to 5)
+3. Generate daily reports
 
-## 📊 API 端点
+## 📊 API Endpoints
 
-| 端点 | 方法 | 说明 |
+| Endpoint | Method | Description |
 |------|------|------|
-| `/api/trending` | GET | 获取 trending 项目列表 |
-| `/api/projects/{id}` | GET | 获取项目详情 |
-| `/api/projects/{id}/summary` | GET | 获取项目摘要 |
-| `/api/report/html` | GET | 获取 HTML 格式报告 |
-| `/api/fetch` | POST | 手动触发数据抓取 |
+| `/api/trending` | GET | Get list of trending projects |
+| `/api/projects/{id}` | GET | Get project details |
+| `/api/projects/{id}/summary` | GET | Get project summary |
+| `/api/report/html` | GET | Get report in HTML format |
+| `/api/fetch` | POST | Manually trigger data fetch |
 
-## 🐳 Docker 部署
+## 🐳 Docker Deployment
 
 ```bash
 docker-compose up -d
 ```
 
-这将启动：
-- API 服务器 (端口 8000)
-- 定时任务调度器
+This will start:
+- API server (port 8000)
+- Scheduled task scheduler
 
-## 📝 技术栈
+## 🔄 CI/CD
 
-- **网页爬取**: BeautifulSoup4 + Requests
-- **Web 框架**: FastAPI
-- **数据库**: SQLite + SQLAlchemy
-- **前端**: HTML/CSS/JavaScript
-- **AI**: OpenAI (可选)
-- **调度**: Schedule
+The project includes GitHub Actions workflows for continuous integration and deployment:
 
-## 🔧 配置
+### Available Workflows
 
-### 环境变量
+1. **CI Tests** (`.github/workflows/ci-test.yml`)
+   - Runs on every push and pull request
+   - Tests Python environment setup
+   - Verifies database initialization
+   - Tests API endpoints
+   - Validates frontend files
+
+2. **Frontend Deploy** (`.github/workflows/frontend-deploy.yml`)
+   - Deploys both backend and frontend
+   - Runs health checks
+   - Provides service URLs for testing
+
+### Running Locally with CI
+
+The workflows can be triggered manually via GitHub Actions UI or will run automatically on:
+- Push to `main`, `master`, or `develop` branches
+- Pull requests to these branches
+
+### Frontend Configuration
+
+The frontend automatically detects the API endpoint:
+- Default: `http://localhost:8000`
+- Can be configured by setting `window.ENV_API_URL` before loading the page
+
+## 📝 Tech Stack
+
+- **Web Scraping**: BeautifulSoup4 + Requests
+- **Web Framework**: FastAPI
+- **Database**: SQLite + SQLAlchemy
+- **Frontend**: HTML/CSS/JavaScript
+- **AI**: OpenAI (optional)
+- **Scheduling**: Schedule
+
+## 🔧 Configuration
+
+### Environment Variables
 
 ```env
-# OpenAI API Key (可选 - 仅用于 AI 摘要)
+# OpenAI API Key (optional - only for AI summaries)
 OPENAI_API_KEY=sk-...
 
-# 数据库
+# Database
 DATABASE_URL=sqlite:///./gh_trending.db
 
-# 应用
+# Application
 DEBUG=True
 LOG_LEVEL=INFO
 ```
 
-### 调度时间
+### Schedule Time
 
-修改 `scheduler.py` 中的时间：
+Modify the time in `scheduler.py`:
 ```python
-schedule.every().day.at("10:00").do(daily_job)  # 每天 10:00
+schedule.every().day.at("10:00").do(daily_job)  # Daily at 10:00 AM
 ```
 
-## 📂 数据库结构
+## 📂 Database Structure
 
-### Projects (项目表)
+### Projects Table
 - id, name, full_name, description
 - language, stars, url
 - created_at, updated_at
 
-### TrendingSnapshots (趋势快照表)
+### TrendingSnapshots Table
 - id, date, project_id
 - stars_at_snapshot, rank
 
-### Summaries (摘要表) - 可选
+### Summaries Table (optional)
 - id, project_id
 - summary_text, analysis
 
-## 🎯 主要改进
+## 🎯 Key Improvements
 
-相比完整版本，此轻量级版本：
+Compared to the full version, this lightweight version:
 
-1. ✅ **无需 GitHub Token** - 使用网页爬取替代 API
-2. ✅ **简化调度** - 从 3 个任务合并为 1 个每日任务
-3. ✅ **降低成本** - AI 摘要数量从 10 个减少到 5 个
-4. ✅ **更轻量** - 移除 PyGithub 依赖
+1. ✅ **No GitHub Token Required** - Uses web scraping instead of API
+2. ✅ **Simplified Scheduling** - Merged from 3 tasks to 1 daily task
+3. ✅ **Lower Costs** - Reduced AI summaries from 10 to 5
+4. ✅ **More Lightweight** - Removed PyGithub dependency
 
 ## 📄 License
 
 MIT License
 
-## 🤝 贡献
+## 🤝 Contributing
 
-欢迎提交 Issue 和 Pull Request！
+Issues and Pull Requests are welcome!
