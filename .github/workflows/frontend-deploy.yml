@@ -1,0 +1,126 @@
+name: Deploy Frontend and Backend
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Initialize database
+      run: |
+        # Create database directory if it doesn't exist
+        mkdir -p data
+
+        # Run database migrations
+        alembic upgrade head
+
+    - name: Start Backend API
+      run: |
+        # Start the FastAPI backend in the background
+        nohup python src/api.py > backend.log 2>&1 &
+
+        # Wait for the API to be ready
+        echo "Waiting for API to start..."
+        for i in {1..30}; do
+          if curl -s http://localhost:8000/ > /dev/null; then
+            echo "API is ready!"
+            break
+          fi
+          echo "Waiting... ($i/30)"
+          sleep 2
+        done
+
+        # Check if API is running
+        curl http://localhost:8000/ || (echo "API failed to start" && cat backend.log && exit 1)
+
+    - name: Fetch Initial Data
+      run: |
+        # Fetch some initial trending data
+        echo "Fetching initial trending data..."
+        curl -X POST http://localhost:8000/api/fetch || echo "Warning: Failed to fetch initial data"
+
+    - name: Start Frontend Server
+      run: |
+        # Start a simple HTTP server for the frontend
+        cd frontend
+        nohup python -m http.server 3000 > ../frontend.log 2>&1 &
+
+        # Wait for the frontend to be ready
+        echo "Waiting for frontend to start..."
+        for i in {1..10}; do
+          if curl -s http://localhost:3000/ > /dev/null; then
+            echo "Frontend is ready!"
+            break
+          fi
+          echo "Waiting... ($i/10)"
+          sleep 1
+        done
+
+    - name: Run Health Checks
+      run: |
+        echo "=== Backend Health Check ==="
+        curl -v http://localhost:8000/
+
+        echo ""
+        echo "=== Trending Data Check ==="
+        curl -s http://localhost:8000/api/trending | head -n 50
+
+        echo ""
+        echo "=== Frontend Health Check ==="
+        curl -v http://localhost:3000/
+
+    - name: Display Service URLs
+      run: |
+        echo "=========================================="
+        echo "Services are running:"
+        echo "  Backend API:  http://localhost:8000"
+        echo "  Frontend:     http://localhost:3000"
+        echo "  API Docs:     http://localhost:8000/docs"
+        echo "  HTML Report:  http://localhost:8000/api/report/html"
+        echo "=========================================="
+
+    - name: Keep Services Running
+      run: |
+        echo "Services are running. This workflow will keep them alive for testing."
+        echo "Backend logs:"
+        cat backend.log
+        echo ""
+        echo "Frontend logs:"
+        cat frontend.log
+
+        # Keep the job running for a bit (useful for manual testing)
+        # In a real deployment, you'd deploy to a hosting service instead
+        sleep 60
+
+    - name: Stop Services
+      if: always()
+      run: |
+        echo "Stopping services..."
+        pkill -f "python src/api.py" || true
+        pkill -f "python -m http.server" || true
+
+        echo "Final backend logs:"
+        cat backend.log || true
+
+        echo "Final frontend logs:"
+        cat frontend.log || true

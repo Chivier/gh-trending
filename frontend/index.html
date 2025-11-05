@@ -205,7 +205,8 @@
     </div>
 
     <script>
-        const API_BASE = 'http://localhost:8000';
+        // Allow API base URL to be configured via environment or use default
+        const API_BASE = window.ENV_API_URL || 'http://localhost:8000';
 
         async function loadTrending() {
             const content = document.getElementById('content');
