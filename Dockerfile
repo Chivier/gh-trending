@@ -1,18 +1,26 @@
-FROM python:3.10-slim
+FROM node:20-slim
 
 WORKDIR /app
 
-# Install system dependencies
+# Install build dependencies
 RUN apt-get update && apt-get install -y \
-    gcc \
+    python3 \
+    make \
+    g++ \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install Python dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy package files
+COPY package*.json ./
+COPY tsconfig.json ./
+
+# Install dependencies
+RUN npm ci
 
 # Copy application code
-COPY . .
+COPY src ./src
+
+# Build TypeScript
+RUN npm run build
 
 # Create reports directory
 RUN mkdir -p reports
@@ -20,5 +28,5 @@ RUN mkdir -p reports
 # Expose port
 EXPOSE 8000
 
-# Run migrations and start API
-CMD alembic upgrade head && python src/api.py
+# Start API
+CMD ["npm", "start"]

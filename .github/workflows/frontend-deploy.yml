@@ -15,29 +15,24 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
       with:
-        python-version: '3.11'
-        cache: 'pip'
+        node-version: '20'
+        cache: 'npm'
 
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        npm ci
 
-    - name: Initialize database
+    - name: Build TypeScript
       run: |
-        # Create database directory if it doesn't exist
-        mkdir -p data
-
-        # Run database migrations
-        alembic upgrade head
+        npm run build
 
     - name: Start Backend API
       run: |
-        # Start the FastAPI backend in the background
-        nohup python src/api.py > backend.log 2>&1 &
+        # Start the Node.js backend in the background
+        nohup npm start > backend.log 2>&1 &
 
         # Wait for the API to be ready
         echo "Waiting for API to start..."
@@ -116,7 +111,7 @@ jobs:
       if: always()
       run: |
         echo "Stopping services..."
-        pkill -f "python src/api.py" || true
+        pkill -f "node.*dist/api.js" || true
         pkill -f "python -m http.server" || true
 
         echo "Final backend logs:"
