@@ -3,10 +3,10 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import * as dotenv from 'dotenv';
 import path from 'path';
+import { Feed } from 'feed';
 import { initializeDatabase, AppDataSource } from './database/data-source';
 import { Project } from './database/models/Project';
 import { TrendingSnapshot } from './database/models/TrendingSnapshot';
-import { Summary } from './database/models/Summary';
 import { TrendingScraper } from './fetch/TrendingScraper';
 import { TableGenerator } from './generate/TableGenerator';
 
@@ -28,8 +28,14 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // Routes
 app.get('/', (req: Request, res: Response) => {
   res.json({
-    message: 'GitHub Trending API',
+    message: 'GitHub Trending RSS Feed',
     version: '1.0.0',
+    endpoints: {
+      'RSS Feed (All Languages)': '/feed.xml',
+      'RSS Feed (By Language)': '/feed/:language.xml (e.g., /feed/javascript.xml)',
+      'JSON API': '/api/trending',
+      'HTML Report': '/api/report/html',
+    },
   });
 });
 
@@ -104,34 +110,6 @@ app.get('/api/projects/:projectId', async (req: Request, res: Response) => {
   }
 });
 
-app.get(
-  '/api/projects/:projectId/summary',
-  async (req: Request, res: Response) => {
-    try {
-      const projectId = parseInt(req.params.projectId);
-      const summaryRepo = AppDataSource.getRepository(Summary);
-
-      const summary = await summaryRepo.findOne({
-        where: { project_id: projectId },
-      });
-
-      if (!summary) {
-        return res.status(404).json({ error: 'Summary not found' });
-      }
-
-      res.json({
-        project_id: summary.project_id,
-        summary_text: summary.summary_text,
-        analysis: summary.analysis,
-        created_at: summary.created_at,
-      });
-    } catch (error) {
-      console.error('Error fetching summary:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  }
-);
-
 app.get('/api/report/html', async (req: Request, res: Response) => {
   try {
     const projectRepo = AppDataSource.getRepository(Project);
@@ -186,6 +164,121 @@ app.get('/api/report/html', async (req: Request, res: Response) => {
     res.header('Content-Type', 'text/html').send(html);
   } catch (error) {
     console.error('Error generating report:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// RSS Feed endpoints
+app.get('/feed.xml', async (req: Request, res: Response) => {
+  try {
+    const snapshotRepo = AppDataSource.getRepository(TrendingSnapshot);
+
+    const snapshots = await snapshotRepo
+      .createQueryBuilder('snapshot')
+      .leftJoinAndSelect('snapshot.project', 'project')
+      .orderBy('snapshot.date', 'DESC')
+      .addOrderBy('snapshot.rank', 'ASC')
+      .take(30)
+      .getMany();
+
+    const baseUrl = process.env.BASE_URL || `http://localhost:${PORT}`;
+
+    const feed = new Feed({
+      title: 'GitHub Trending Repositories',
+      description: 'Daily trending repositories on GitHub',
+      id: baseUrl,
+      link: baseUrl,
+      language: 'en',
+      favicon: `${baseUrl}/favicon.ico`,
+      copyright: 'All rights reserved',
+      updated: snapshots.length > 0 ? snapshots[0].date : new Date(),
+      generator: 'GitHub Trending RSS',
+      feedLinks: {
+        rss: `${baseUrl}/feed.xml`,
+      },
+    });
+
+    snapshots.forEach((snapshot) => {
+      feed.addItem({
+        title: `#${snapshot.rank} ${snapshot.project.full_name}`,
+        id: snapshot.project.url,
+        link: snapshot.project.url,
+        description: snapshot.project.description || 'No description available',
+        content: `
+          <h3>${snapshot.project.full_name}</h3>
+          <p>${snapshot.project.description || 'No description available'}</p>
+          <ul>
+            <li><strong>Language:</strong> ${snapshot.project.language || 'N/A'}</li>
+            <li><strong>Stars:</strong> ${snapshot.project.stars}</li>
+            <li><strong>Rank:</strong> #${snapshot.rank}</li>
+          </ul>
+        `,
+        date: snapshot.date,
+      });
+    });
+
+    res.header('Content-Type', 'application/rss+xml; charset=utf-8');
+    res.send(feed.rss2());
+  } catch (error) {
+    console.error('Error generating RSS feed:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/feed/:language.xml', async (req: Request, res: Response) => {
+  try {
+    const language = req.params.language;
+    const snapshotRepo = AppDataSource.getRepository(TrendingSnapshot);
+
+    const snapshots = await snapshotRepo
+      .createQueryBuilder('snapshot')
+      .leftJoinAndSelect('snapshot.project', 'project')
+      .where('LOWER(project.language) = LOWER(:language)', { language })
+      .orderBy('snapshot.date', 'DESC')
+      .addOrderBy('snapshot.rank', 'ASC')
+      .take(30)
+      .getMany();
+
+    const baseUrl = process.env.BASE_URL || `http://localhost:${PORT}`;
+
+    const feed = new Feed({
+      title: `GitHub Trending ${language} Repositories`,
+      description: `Daily trending ${language} repositories on GitHub`,
+      id: `${baseUrl}/feed/${language}.xml`,
+      link: baseUrl,
+      language: 'en',
+      favicon: `${baseUrl}/favicon.ico`,
+      copyright: 'All rights reserved',
+      updated: snapshots.length > 0 ? snapshots[0].date : new Date(),
+      generator: 'GitHub Trending RSS',
+      feedLinks: {
+        rss: `${baseUrl}/feed/${language}.xml`,
+      },
+    });
+
+    snapshots.forEach((snapshot) => {
+      feed.addItem({
+        title: `#${snapshot.rank} ${snapshot.project.full_name}`,
+        id: snapshot.project.url,
+        link: snapshot.project.url,
+        description: snapshot.project.description || 'No description available',
+        content: `
+          <h3>${snapshot.project.full_name}</h3>
+          <p>${snapshot.project.description || 'No description available'}</p>
+          <ul>
+            <li><strong>Language:</strong> ${snapshot.project.language || 'N/A'}</li>
+            <li><strong>Stars:</strong> ${snapshot.project.stars}</li>
+            <li><strong>Rank:</strong> #${snapshot.rank}</li>
+          </ul>
+        `,
+        date: snapshot.date,
+      });
+    });
+
+    res.header('Content-Type', 'application/rss+xml; charset=utf-8');
+    res.send(feed.rss2());
+  } catch (error) {
+    console.error('Error generating RSS feed:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
