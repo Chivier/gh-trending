@@ -2,6 +2,13 @@
 
 A lightweight GitHub Trending scraper and analysis tool that requires no GitHub Token and updates automatically every day.
 
+[![CI Tests](https://github.com/Chivier/gh-trending/workflows/CI%20Tests/badge.svg)](https://github.com/Chivier/gh-trending/actions)
+
+## 🌐 Links
+
+- **Website**: [https://chivier.github.io/gh-trending/](https://chivier.github.io/gh-trending/)
+- **Repository**: [https://github.com/Chivier/gh-trending](https://github.com/Chivier/gh-trending)
+
 ## ✨ Features
 
 - **🚫 No Token Required**: Directly scrapes GitHub Trending pages without needing an API Token

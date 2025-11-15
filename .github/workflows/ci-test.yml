@@ -28,9 +28,17 @@ jobs:
       run: |
         npm list || true
 
+    - name: Run Linter
+      run: |
+        npm run lint
+
     - name: Build TypeScript
       run: |
         npm run build
+
+    - name: Run Tests
+      run: |
+        npm test
 
     - name: Test API startup
       run: |
@@ -68,8 +76,3 @@ jobs:
         grep -q "GitHub Trending Dashboard" frontend/index.html || exit 1
 
         echo "✓ Frontend files verified"
-
-    - name: Run Tests
-      run: |
-        # Run tests if they exist
-        npm test || echo "No tests configured"
