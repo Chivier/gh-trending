@@ -4,7 +4,6 @@ import * as dotenv from 'dotenv';
 import path from 'path';
 import { Project } from './models/Project';
 import { TrendingSnapshot } from './models/TrendingSnapshot';
-import { Summary } from './models/Summary';
 
 dotenv.config();
 
@@ -15,7 +14,7 @@ export const AppDataSource = new DataSource({
   database: dbPath,
   synchronize: true, // Auto-create tables (for development)
   logging: process.env.NODE_ENV === 'development',
-  entities: [Project, TrendingSnapshot, Summary],
+  entities: [Project, TrendingSnapshot],
   migrations: [],
   subscribers: [],
 });

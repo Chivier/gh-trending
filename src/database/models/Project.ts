@@ -8,7 +8,6 @@ import {
   Index,
 } from 'typeorm';
 import { TrendingSnapshot } from './TrendingSnapshot';
-import { Summary } from './Summary';
 
 @Entity('projects')
 export class Project {
@@ -47,9 +46,4 @@ export class Project {
     cascade: true,
   })
   trending_snapshots!: TrendingSnapshot[];
-
-  @OneToMany(() => Summary, (summary) => summary.project, {
-    cascade: true,
-  })
-  summaries!: Summary[];
 }

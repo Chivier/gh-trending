@@ -4,9 +4,7 @@ import * as dotenv from 'dotenv';
 import { initializeDatabase, AppDataSource } from './database/data-source';
 import { Project } from './database/models/Project';
 import { TrendingSnapshot } from './database/models/TrendingSnapshot';
-import { Summary } from './database/models/Summary';
 import { TrendingScraper } from './fetch/TrendingScraper';
-import { ProjectSummarizer } from './summarize/ProjectSummarizer';
 
 dotenv.config();
 
@@ -25,21 +23,6 @@ async function fetchTrendingData() {
   }
 }
 
-async function generateSummaries() {
-  console.log('Starting scheduled summary generation...');
-  try {
-    const projectRepo = AppDataSource.getRepository(Project);
-    const summaryRepo = AppDataSource.getRepository(Summary);
-
-    const summarizer = new ProjectSummarizer(projectRepo, summaryRepo);
-    const summaries = await summarizer.summarizeTrendingProjects(5);
-
-    console.log(`✓ Successfully generated ${summaries.length} summaries`);
-  } catch (error) {
-    console.error('Error generating summaries:', error);
-  }
-}
-
 async function main() {
   try {
     // Initialize database
@@ -53,13 +36,6 @@ async function main() {
       timezone: 'UTC',
     });
     console.log('✓ Scheduled daily trending fetch at 9:00 AM UTC');
-
-    // Generate summaries every day at 10:00 AM
-    cron.schedule('0 10 * * *', generateSummaries, {
-      scheduled: true,
-      timezone: 'UTC',
-    });
-    console.log('✓ Scheduled daily summary generation at 10:00 AM UTC');
 
     // Run once immediately on startup
     console.log('\nRunning initial data fetch...');
