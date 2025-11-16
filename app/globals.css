@@ -1,0 +1,171 @@
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+body {
+  background-color: #0d1117;
+  color: #c9d1d9;
+  line-height: 1.6;
+}
+
+a {
+  color: #58a6ff;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.header {
+  text-align: center;
+  padding: 40px 0;
+  border-bottom: 1px solid #21262d;
+}
+
+.header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+  color: #f0f6fc;
+}
+
+.header p {
+  font-size: 1.1rem;
+  color: #8b949e;
+}
+
+.trending-list {
+  margin-top: 30px;
+}
+
+.trending-item {
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 16px;
+  transition: border-color 0.2s;
+}
+
+.trending-item:hover {
+  border-color: #58a6ff;
+}
+
+.trending-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.trending-item-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #f0f6fc;
+}
+
+.trending-item-rank {
+  background-color: #21262d;
+  color: #58a6ff;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.trending-item-description {
+  color: #8b949e;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.trending-item-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 0.9rem;
+  color: #8b949e;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.language-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #58a6ff;
+}
+
+.rss-links {
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 20px;
+  margin-bottom: 30px;
+}
+
+.rss-links h2 {
+  font-size: 1.3rem;
+  margin-bottom: 12px;
+  color: #f0f6fc;
+}
+
+.rss-links ul {
+  list-style: none;
+}
+
+.rss-links li {
+  padding: 8px 0;
+}
+
+.btn {
+  display: inline-block;
+  padding: 8px 16px;
+  background-color: #21262d;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  color: #c9d1d9;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn:hover {
+  background-color: #30363d;
+  border-color: #58a6ff;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background-color: #238636;
+  border-color: #238636;
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background-color: #2ea043;
+  border-color: #2ea043;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #8b949e;
+}

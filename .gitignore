@@ -214,7 +214,14 @@ yarn-error.log*
 dev-debug.log
 # Dependency directories
 node_modules/
+# Next.js
+.next/
+out/
 # Environment variables
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 # Editor directories and files
 .idea
 .vscode
